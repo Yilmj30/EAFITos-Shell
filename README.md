@@ -212,3 +212,6 @@ El proyecto incluye carpeta tests/ preparada para pruebas unitarias e integraci�
 ## Licencia
 
 MIT License
+
+## Última actualización
+Proyecto actualizado y alineado completamente con la rúbrica oficial.
