@@ -1,3 +1,12 @@
+# =====================================================
+# Arquitectura Modular EAFITos
+# Estructura:
+# - src/core       → Núcleo del shell
+# - src/commands   → Implementación de comandos
+# - src/utils      → Funciones auxiliares
+# - include        → Headers públicos
+# =====================================================
+
 # ==============================================================================
 # Makefile para EAFITos
 # ==============================================================================
