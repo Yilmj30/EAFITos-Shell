@@ -157,8 +157,7 @@ lister
 
 - Autocompletado con TAB  
 - Soporte multi-idioma (ES / EN / FR)  
-- Manejo de señales (Ctrl+C no cierra la shell)  
-- Prompt personalizado con color  
+- Manejo de señales (Ctrl+C no cierra la shell)   
 - Historial interno de comandos  
 - Arquitectura modular profesional  
 - Documentación automática con Doxygen  
