@@ -24,7 +24,7 @@ El proyecto simula el comportamiento de una shell real mediante un ciclo REPL (R
 ## Arquitectura del Proyecto
 
 
-eafitos/
+```eafitos/
 ├── src/
 │   ├── core/
 │   │   ├── main.c
@@ -60,6 +60,7 @@ eafitos/
 ├── CONTRIBUTION.md
 ├── CHANGELOG.md
 └── LICENSE
+```
 
 
 Arquitectura modular separando responsabilidades en:
