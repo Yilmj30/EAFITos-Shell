@@ -73,7 +73,4 @@ Puedes ejecutar cada comando en Español / Inglés / Francés según alias.
 - Presionar Ctrl+C NO cierra la shell.
 - Solo cancela la línea actual y regresa al prompt EAFITos>.
 
-===============================================================================
-Fin de la guía
-===============================================================================
 */
