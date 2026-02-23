@@ -1,22 +1,39 @@
+
 # Configuración básica de Doxygen para EAFITos
+
 
 PROJECT_NAME           = "EAFITos"
 PROJECT_NUMBER         = "1.0"
 PROJECT_BRIEF          = "Sistema Operativo Educativo y Shell"
 
-OUTPUT_DIRECTORY       = docs
+# Generar en la misma carpeta donde está el Doxyfile
+OUTPUT_DIRECTORY       = .
+HTML_OUTPUT            = .
+
+# Archivos fuente
 INPUT                  = src include
 RECURSIVE              = YES
 
+# Optimización para C
 OPTIMIZE_OUTPUT_FOR_C  = YES
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 
-GENERATE_LATEX         = NO
+# Solo HTML
 GENERATE_HTML          = YES
-HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
 
-# Visual styling
+# No generar subcarpetas innecesarias
+CREATE_SUBDIRS         = NO
+
+# Desactivar gráficos (puedes activarlo si instalas graphviz)
 HAVE_DOT               = NO
-# Set to YES if graphviz is installed for graphs
+
+# Mostrar archivos fuente
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+
+# Generar índice
+GENERATE_TREEVIEW      = YES
+FULL_PATH_NAMES        = NO

@@ -8,126 +8,126 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <signal.h>
+
 #include "shell.h"
 
 #define BUFFER_SIZE 1024
 
-/* ===================================== */
-/* ==== DECLARACIONES EXTERNAS ========= */
-/* ===================================== */
-
-/*
- * Estas vienen desde shell_loop.c
- */
 extern int num_comandos();
-
-
 extern Comando tabla_comandos[];
 
-/* ===================================== */
-/* ====== MODO RAW PARA TERMINAL ======= */
-/* ===================================== */
+/* ============================= */
+/* ====== MANEJO DE SEÑALES ==== */
+/* ============================= */
 
-void habilitar_modo_raw(struct termios *original) {
+static volatile sig_atomic_t g_interrupted = 0;
+
+static void sigint_handler(int sig) {
+    (void)sig;
+    g_interrupted = 1;
+}
+
+/* ============================= */
+/* ====== MODO RAW TERMINAL ==== */
+/* ============================= */
+
+static void habilitar_modo_raw(struct termios *original) {
     struct termios raw;
     tcgetattr(STDIN_FILENO, original);
     raw = *original;
 
-    raw.c_lflag &= ~(ICANON | ECHO); // Sin modo canónico y sin eco automático
+    raw.c_lflag &= ~(ICANON | ECHO);
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-void restaurar_modo(struct termios *original) {
+static void restaurar_modo(struct termios *original) {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, original);
 }
 
-/* ===================================== */
-/* ========= AUTOCOMPLETADO ============ */
-/* ===================================== */
+/* ============================= */
+/* ========= AUTOCOMPLETADO ==== */
+/* ============================= */
 
-void autocompletar(char *buffer) {
-
+static void autocompletar(char *buffer) {
     int coincidencias = 0;
     char *match = NULL;
 
     for (int i = 0; i < num_comandos(); i++) {
-
         if (strncmp(buffer, tabla_comandos[i].es, strlen(buffer)) == 0 ||
             strncmp(buffer, tabla_comandos[i].en, strlen(buffer)) == 0 ||
             strncmp(buffer, tabla_comandos[i].fr, strlen(buffer)) == 0) {
-
             coincidencias++;
-            match = tabla_comandos[i].es; // completamos en español
+            match = tabla_comandos[i].es; /* completar en español */
         }
     }
 
     if (coincidencias == 1 && match != NULL) {
-
         printf("\r\033[1;32mEAFITos>\033[0m %s", match);
         fflush(stdout);
         strcpy(buffer, match);
-    }
-    else if (coincidencias > 1) {
-
+    } else if (coincidencias > 1) {
         printf("\n");
-
         for (int i = 0; i < num_comandos(); i++) {
-
             if (strncmp(buffer, tabla_comandos[i].es, strlen(buffer)) == 0 ||
                 strncmp(buffer, tabla_comandos[i].en, strlen(buffer)) == 0 ||
                 strncmp(buffer, tabla_comandos[i].fr, strlen(buffer)) == 0) {
-
                 printf("%s  ", tabla_comandos[i].es);
             }
         }
-
         printf("\n\033[1;32mEAFITos>\033[0m %s", buffer);
         fflush(stdout);
     }
 }
 
-/* ===================================== */
-/* ========= LECTURA DE LÍNEA ========= */
-/* ===================================== */
+/* ============================= */
+/* ========= LECTURA LINEA ===== */
+/* ============================= */
 
 char *leer_linea(void) {
-
     static char buffer[BUFFER_SIZE];
     int pos = 0;
     struct termios original;
 
+    /* instalar handler SIGINT (Ctrl+C) */
+    signal(SIGINT, sigint_handler);
+    g_interrupted = 0;
+
     habilitar_modo_raw(&original);
 
     while (1) {
-
-        char c = getchar();
-
-        if (c == '\n') {
-
-            buffer[pos] = '\0';
+        if (g_interrupted) {
+            /* Ctrl+C: no mata la shell, solo vuelve al prompt */
+            buffer[0] = '\0';
             printf("\n");
             break;
         }
 
-        else if (c == 127 || c == 8) { // Backspace
+        int ci = getchar();
+        if (ci == EOF) {
+            buffer[0] = '\0';
+            printf("\n");
+            break;
+        }
 
+        char c = (char)ci;
+
+        if (c == '\n') {
+            buffer[pos] = '\0';
+            printf("\n");
+            break;
+        } else if (c == 127 || c == 8) { /* Backspace */
             if (pos > 0) {
                 pos--;
                 printf("\b \b");
                 fflush(stdout);
             }
-        }
-
-        else if (c == 9) { // TAB
-
+        } else if (c == 9) { /* TAB */
             buffer[pos] = '\0';
             autocompletar(buffer);
-            pos = strlen(buffer);
-        }
-
-        else {
-
+            pos = (int)strlen(buffer);
+        } else {
             if (pos < BUFFER_SIZE - 1) {
                 buffer[pos++] = c;
                 putchar(c);
@@ -138,40 +138,35 @@ char *leer_linea(void) {
 
     restaurar_modo(&original);
 
-    return strdup(buffer); // Importante: malloc interno para que shell_loop pueda hacer free()
+    return strdup(buffer);
 }
 
-/* ===================================== */
-/* ========= PARSEAR LÍNEA ============= */
-/* ===================================== */
+/* ============================= */
+/* ========= PARSEAR LINEA ===== */
+/* ============================= */
 
 char **parsear_linea(char *linea) {
-
     int bufsize = 64;
     int posicion = 0;
 
-    char **tokens = malloc(bufsize * sizeof(char*));
-    char *token;
-
+    char **tokens = malloc((size_t)bufsize * sizeof(char *));
     if (!tokens) {
         fprintf(stderr, "Error de asignación de memoria\n");
         exit(EXIT_FAILURE);
     }
 
-    token = strtok(linea, DELIM);
-
+    char *token = strtok(linea, DELIM);
     while (token != NULL) {
-
         tokens[posicion++] = token;
 
         if (posicion >= bufsize) {
             bufsize += 64;
-            tokens = realloc(tokens, bufsize * sizeof(char*));
-
-            if (!tokens) {
+            char **tmp = realloc(tokens, (size_t)bufsize * sizeof(char *));
+            if (!tmp) {
                 fprintf(stderr, "Error de reasignación de memoria\n");
                 exit(EXIT_FAILURE);
             }
+            tokens = tmp;
         }
 
         token = strtok(NULL, DELIM);

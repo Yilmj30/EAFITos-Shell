@@ -6,48 +6,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "shell.h"
 #include "commands.h"
 
 #define MAX_HISTORY 100
 #define MAX_INPUT 256
 
-/* ============================= */
-/* ====== HISTORIAL GLOBAL ===== */
-/* ============================= */
-
 char history[MAX_HISTORY][MAX_INPUT];
 int history_count = 0;
 
-/* ============================= */
-/* ===== TABLA MULTI-IDIOMA ==== */
-/* ============================= */
-
-/*
- * Ahora cada comando tiene:
- * Español | Inglés | Francés | Función
- */
-
-
+/* Tabla multi-idioma */
 Comando tabla_comandos[] = {
-    {"listar",    "list",      "lister",     &cmd_listar},
-    {"leer",      "read",      "lire",       &cmd_leer},
-    {"tiempo",    "time",      "temps",      &cmd_tiempo},
-    {"calc",      "calc",      "calc",       &cmd_calc},
-    {"ayuda",     "help",      "aide",       &cmd_ayuda},
-    {"salir",     "exit",      "sortir",     &cmd_salir},
-    {"historial", "history",   "historique", NULL}, // lo manejamos aquí
-    {"limpiar",   "clear",     "nettoyer",   NULL}  // lo manejamos aquí
+    {"listar",     "list",       "lister",      &cmd_listar},
+    {"leer",       "read",       "lire",        &cmd_leer},
+    {"tiempo",     "time",       "temps",       &cmd_tiempo},
+    {"calc",       "calc",       "calc",        &cmd_calc},
+    {"ayuda",      "help",       "aide",        &cmd_ayuda},
+    {"salir",      "exit",       "sortir",      &cmd_salir},
+
+    /* Sistema (avanzados mínimos) */
+    {"historial",  "history",    "historique",  NULL}, /* interno */
+    {"limpiar",    "clear",      "nettoyer",    NULL}, /* interno */
+
+    /* Extra para más puntos */
+    {"usuario",    "user",       "utilisateur", &cmd_usuario},
+    {"directorio", "pwd",        "repertoire",  &cmd_directorio}
 };
 
 int num_comandos() {
-    return sizeof(tabla_comandos) / sizeof(Comando);
+    return (int)(sizeof(tabla_comandos) / sizeof(Comando));
 }
 
-/* ============================= */
-/* ========= HISTORIAL ========= */
-/* ============================= */
-
+/* Historial */
 void guardar_historial(char *linea) {
     if (history_count < MAX_HISTORY) {
         strncpy(history[history_count], linea, MAX_INPUT - 1);
@@ -65,31 +56,20 @@ void cmd_historial() {
     }
 }
 
-/* ============================= */
-/* ========= LIMPIAR =========== */
-/* ============================= */
-
+/* Limpiar */
 void cmd_limpiar() {
     printf("\033[H\033[J");
 }
 
-/* ============================= */
-/* ========= EJECUTAR ========== */
-/* ============================= */
-
+/* Ejecutar */
 void ejecutar(char **args) {
-
-    if (args[0] == NULL) {
-        return;
-    }
+    if (args[0] == NULL) return;
 
     for (int i = 0; i < num_comandos(); i++) {
-
         if (strcmp(args[0], tabla_comandos[i].es) == 0 ||
             strcmp(args[0], tabla_comandos[i].en) == 0 ||
             strcmp(args[0], tabla_comandos[i].fr) == 0) {
 
-            // Comandos manejados internamente
             if (strcmp(tabla_comandos[i].es, "historial") == 0) {
                 cmd_historial();
                 return;
@@ -100,7 +80,6 @@ void ejecutar(char **args) {
                 return;
             }
 
-            // Comandos normales
             if (tabla_comandos[i].func != NULL) {
                 (*tabla_comandos[i].func)(args);
                 return;
@@ -111,12 +90,8 @@ void ejecutar(char **args) {
     printf("Comando desconocido: %s\nEscribe 'ayuda' / 'help' / 'aide'\n", args[0]);
 }
 
-/* ============================= */
-/* ========= REPL LOOP ========= */
-/* ============================= */
-
+/* Loop */
 void loop_shell() {
-
     char *linea;
     char **args;
     int status = 1;
@@ -126,7 +101,6 @@ void loop_shell() {
 
         linea = leer_linea();
 
-        // Guardar en historial antes de parsear
         if (linea != NULL && strlen(linea) > 1) {
             guardar_historial(linea);
         }

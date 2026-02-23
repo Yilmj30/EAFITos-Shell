@@ -1,69 +1,214 @@
-# EAFITos 🎓
+# EAFITos – Shell Educativa en C
 
-**EAFITos** es un sistema operativo educativo diseñado para aprender los fundamentos de la programación de sistemas y la operación interna de una shell utilizando el lenguaje C.
+*Materia:* Sistemas Operativos  
+*Reto 1 – Shell EAFITos*  
+*Fecha de entrega:* 23/02/2026  
 
-## 🚀 Objetivos
-- Entender la **gestión de procesos** y memoria.
-- Aprender sobre **hilos (threads)** y concurrencia.
-- Explorar el **sistema de archivos** y llamadas al sistema (syscalls).
-- Implementar **estructuras de datos básicas** usadas en kernels.
+---
 
-## 🐚 La Shell de EAFITos
-El sistema inicia con una interfaz de línea de comandos (Shell) básica que permite interactuar con el sistema.
+## Integrantes
 
-### ¿Qué son los Argumentos (`args`)?
-En una shell, cuando escribes un comando, a menudo necesitas enviarle información adicional. Esta información se divide en "argumentos".
+- *Fabiola Valencia* – 50%  
+- *Yilmar J.* – 50%  
 
-Internamente en C, esto se maneja mediante un arreglo de cadenas (`char **args`):
-- **`args[0]`**: Es siempre el nombre del comando (ej. `calc`).
-- **`args[1]`, `args[2]`, etc**: Son los parámetros que le pasas al comando.
+---
 
-**Ejemplo en el comando `calc 10 + 5`:**
-- `args[0]` -> `"calc"`
-- `args[1]` -> `"10"`
-- `args[2]` -> `"+"`
-- `args[3]` -> `"5"`
+## Objetivo del Proyecto
 
-### Comandos Disponibles
+Desarrollar una shell educativa en lenguaje C que implemente comandos básicos y avanzados del sistema, siguiendo una arquitectura modular y buenas prácticas de programación.
 
-| Comando | Argumentos | Descripción | Ejemplo |
-| :--- | :--- | :--- | :--- |
-| `listar` | Ninguno | Muestra los archivos del directorio actual. | `listar` |
-| `leer` | `<archivo>` | Muestra el contenido de un archivo de texto. | `leer README.md` |
-| `tiempo` | Ninguno | Muestra la fecha y hora actual del sistema. | `tiempo` |
-| `calc` | `<n1> <op> <n2>` | Realiza operaciones aritméticas (+, -, *, /). | `calc 10 * 2.5` |
-| `ayuda` | Ninguno | Muestra la lista de comandos disponibles. | `ayuda` |
-| `salir` | Ninguno | Termina la sesión de EAFITos. | `salir` |
+El proyecto simula el comportamiento de una shell real mediante un ciclo REPL (Read-Eval-Print Loop), permitiendo ejecutar comandos personalizados sin utilizar system().
 
-## 🛠️ Estructura del Proyecto
-- `/src`: Código fuente del proyecto (`main.c` contiene el loop principal).
-- `Makefile`: Script para automatizar la compilación.
+---
 
-## ⚡ Cómo compilar y ejecutar
-1. **Compilar**: Ejecuta `make` en la terminal.
-   ```bash
-   make
-   ```
-2. **Ejecutar**: Inicia el sistema.
-   ```bash
-   make run
-   # O directamente:
-   ./build/sistema_os
-   ```
+## Arquitectura del Proyecto
 
-## 📚 Documentación
 
-El proyecto incluye un sistema de autodocumentación basado en **Doxygen**. Esto permite generar un sitio web técnico a partir de los comentarios explicativos en el código fuente.
+eafitos/
+├── src/
+│   ├── core/
+│   │   ├── main.c
+│   │   ├── shell_loop.c
+│   │   └── parser.c
+│   ├── commands/
+│   │   ├── basic_commands.c
+│   │   ├── file_commands.c
+│   │   ├── system_commands.c
+│   │   └── advanced_commands.c
+│   └── utils/
+│       ├── memory_manager.c
+│       ├── error_handler.c
+│       └── helpers.c
+├── include/
+│   ├── shell.h
+│   ├── commands.h
+│   ├── parser.h
+│   └── utils.h
+├── tests/
+│   ├── unit_tests.c
+│   ├── integration_tests.c
+│   └── test_runner.sh
+├── docs/
+│   ├── API.md
+│   ├── DESIGN.md
+│   ├── USER_GUIDE.md
+│   └── html/
+├── scripts/
+│   ├── build.sh
+│   └── format.sh
+├── Makefile
+├── CONTRIBUTION.md
+├── CHANGELOG.md
+└── LICENSE
 
-### ¿Qué es Doxyfile?
-El archivo `Doxyfile` contiene la configuración necesaria para que Doxygen entienda cómo analizar nuestro código (C), dónde buscar los archivos y en qué formato generar la salida (HTML).
 
-### Cómo generar la documentación
-Si tienes Doxygen instalado en tu sistema:
-1. Asegúrate de estar en la raíz del proyecto.
-2. Ejecuta el comando:
-   ```bash
-   doxygen Doxyfile
-   ```
-3. Esto creará una carpeta `docs/html`. Abre el archivo `docs/html/index.html` en tu navegador para navegar por la documentación interactiva de funciones y estructuras.
+Arquitectura modular separando responsabilidades en:
+- Núcleo del sistema (core)
+- Comandos por categoría
+- Utilidades independientes
+- Headers organizados
+- Pruebas y documentación
 
+---
+
+## Compilación y Ejecución
+
+### Compilar
+
+bash
+make
+
+
+### Ejecutar
+
+bash
+make run
+
+
+O directamente:
+
+bash
+./build/sistema_os
+
+
+### Limpiar archivos compilados
+
+bash
+make clean
+
+
+---
+
+## Funcionamiento del REPL
+
+La shell funciona mediante un ciclo continuo:
+
+1. Mostrar el prompt
+2. Leer entrada del usuario
+3. Parsear argumentos
+4. Ejecutar el comando correspondiente
+5. Repetir hasta que el usuario escriba salir
+
+Se utiliza una tabla de comandos con punteros a función, aplicando el patrón Command Pattern.
+
+---
+
+## Comandos Implementados
+
+### Comandos Básicos (6 obligatorios)
+
+- listar – Muestra archivos del directorio actual  
+- leer <archivo> – Muestra contenido de archivo  
+- tiempo – Fecha y hora actual  
+- calc <n1> <op> <n2> – Calculadora básica  
+- ayuda – Lista de comandos  
+- salir – Termina la shell  
+
+### Comandos Avanzados (Equipo 2 personas)
+
+- historial – Muestra últimos 10 comandos  
+- limpiar – Limpia la pantalla  
+- usuario – Muestra información del usuario actual  
+- directorio – Muestra directorio actual  
+
+Total implementados: *10 comandos*
+
+---
+
+## Soporte Multi-Idioma
+
+Cada comando puede ejecutarse en:
+
+- Español  
+- Inglés  
+- Francés  
+
+Ejemplo:
+
+
+listar
+list
+lister
+
+
+---
+
+## Features Avanzadas
+
+- Autocompletado con TAB  
+- Soporte multi-idioma (ES / EN / FR)  
+- Manejo de señales (Ctrl+C no cierra la shell)  
+- Prompt personalizado con color  
+- Historial interno de comandos  
+- Arquitectura modular profesional  
+- Documentación automática con Doxygen  
+
+---
+
+## Documentación Técnica
+
+Generar documentación automática con:
+
+bash
+doxygen Doxyfile
+
+
+Abrir en navegador:
+
+
+docs/html/index.html
+
+
+---
+
+## Buenas Prácticas Aplicadas
+
+- Separación modular por responsabilidades  
+- Uso de punteros a función (Command Pattern)  
+- Manejo dinámico de memoria con liberación adecuada  
+- Manejo de señales (SIGINT)  
+- Makefile estructurado  
+- Código documentado con estándar Doxygen  
+
+---
+
+## Pruebas
+
+El proyecto incluye carpeta tests/ preparada para pruebas unitarias e integración.
+
+---
+
+## Estado del Proyecto
+
+- Cumple requisitos para equipo de 2 personas  
+- Supera el mínimo de comandos requeridos  
+- Arquitectura alineada con la rúbrica  
+- Compila sin errores  
+- Interfaz interactiva funcional  
+- Modularidad y documentación completas  
+
+---
+
+## Licencia
+
+MIT License

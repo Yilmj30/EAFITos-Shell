@@ -4,6 +4,10 @@ build/
 # Archivos objeto
 *.o
 
-# Archivos temporales
+# Temporales
 *.swp
+*.tmp
 
+# Ejecutables comunes
+sistema_os
+eafitos
