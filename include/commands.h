@@ -16,6 +16,14 @@ void cmd_calc(char **args);
 void cmd_ayuda(char **args);
 void cmd_salir(char **args);
 
+
+/* ADVANCED COMMANDS */
+
+void cmd_historial(char **args);
+void cmd_limpiar(char **args);
+void cmd_cd(char **args);
+
+void guardar_historial(char *linea);
 /* Sistema (avanzados) */
 void cmd_usuario(char **args);
 void cmd_directorio(char **args);
